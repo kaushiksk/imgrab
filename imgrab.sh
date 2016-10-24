@@ -28,6 +28,7 @@ ftrue=0
 xtrue=0
 ltrue=0
 Ltrue=0
+ktrue=0
 DATETIME="`date +%Y%m%d%H%M`"
 j=0
 total_size=0
@@ -63,7 +64,7 @@ i=$(( (i+1) %4))
 printf "\r${spin:$i:1} ${j}/${t_count} $filename %.4fKB          " "$size"
 sleep .1
 done
-echo -ne "\r\b>Finishing up...                        "
+echo -ne "\r\bFinishing up...                        "
 }
 #----------------------------------------------------------------------------#
 #trap Cltr-C
@@ -108,7 +109,7 @@ exit 1
 
 #---------------------------------------------------------------------------#
 # parse options
-while getopts 'o:hf:x:Ll:' opt ; do
+while getopts 'o:hf:x:Lkl:' opt ; do
   case $opt in
     h) usage;
        exit
@@ -126,6 +127,8 @@ while getopts 'o:hf:x:Ll:' opt ; do
     L) Ltrue=1;
         print_log;
         exit;;
+    k) ktrue=1;;
+        
     \?) 
         echo -e "Type${GR}${BOLD} `basename $0` -h ${RESET}to display help";
         exit
@@ -228,7 +231,12 @@ do
 #Set custom filename with extension
 j=$((j+1));
 extnsn=$(echo $(basename $t) | sed "s/.*\(\.[^\.]*\)$/\1/");
+if [ $ktrue -ne 1 ]
+then
 filename="${DATETIME}_IMG0${j}${extnsn}";
+else 
+filename=$(basename $t)
+fi
 
 link=$t
 
@@ -263,8 +271,8 @@ total_size=$(echo "$total_size + $size"|bc -l);
 (curl -s $abs_link > "${path}/${filename}") & spinner;
 done
 
-if [ $j -eq $t_count ]
+if [ "$j" -eq "$t_count" ];
 then
 printf "\rFinished Downloading $t_count Images (%.2fKB)\n" "$total_size"
 echo -ne "`date +"%Y/%m/%d %H:%M:%S"` $short_url $t_count $j Successful\n">>$folder/log
-fi
+fi;
